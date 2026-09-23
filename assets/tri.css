@@ -1,0 +1,1478 @@
+/* ============================================================================
+   The Raven Index — design system
+   ----------------------------------------------------------------------------
+   One stylesheet for every page on this site. Before this file existed, all
+   five pages carried their own copy of these rules: 54 of 68 were identical,
+   and the four product pages were byte-for-byte the same. Changing the brand
+   meant editing five files and hoping none drifted.
+
+   Layers below, in order:
+     1. Tokens      — colour, type and rule; the only place hex values live
+     2. Reset/base  — document defaults
+     3. Chrome      — utility bar, header, nav, footer
+     4. Blocks      — hero, section, card, table, ledger, plate
+     5. Motion      — scroll reveals, link hover, copper draw
+     6. Responsive  — the breakpoints those blocks need
+
+   Rules: no hex literal outside the token block; no rule here that only one
+   page uses (those stay in that page's own <style>).
+   ========================================================================= */
+
+/* --- 0. Fonts ----------------------------------------------------------- */
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("fonts/space-grotesk-var.woff2") format("woff2");
+  font-weight: 500 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("fonts/inter-var.woff2") format("woff2");
+  font-weight: 300 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-500.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-600.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
+
+/* --- 1. Tokens ---------------------------------------------------------- */
+:root {
+  --ink: #0C0D10;
+  --paper: #F4F1E8;
+  --copper: #E6603F;
+  --copper-hover: #D54F2E;
+  /* --copper is a fill (dots, buttons, rules). As TEXT on paper it is 3.04:1,
+     which fails AA outright, so text uses this darker cut at 4.54:1. Never set
+     `color: var(--copper)` on paper. */
+  --copper-ink: #B74C32;
+  /* Body copy carries the argument of this page, so it is measured, not eyeballed.
+     #68707A sat at 4.44:1 on paper — under AA, on every paragraph on the site.
+     #4B5158 is 7.10:1. Hierarchy comes from size and weight, not from greying
+     the text until it stops being readable. */
+  --steel: #4B5158;
+  --fog: #D8D5CD;
+  --raised-ink: #17191E;
+  --hairline: rgba(12, 13, 16, 0.12);
+  --hairline-on-ink: rgba(244, 241, 232, 0.14);
+  --raised-card: rgba(255, 255, 255, 0.75);
+  /* The product plate's long shadow. Lives here and nowhere else: the site's
+     own rule is no colour literal outside the token block. */
+  --plate-shadow: 0 24px 80px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.2);
+  --font-display: "Space Grotesk", system-ui, -apple-system, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", Consolas, monospace;
+  /* The ink ground is the light-mode value of --ink; paper-on-ink is
+     the light-mode --paper used as text on that ground. These do NOT
+     swap in dark mode because the ink ground is always dark. */
+  --ink-ground: #0C0D10;
+  --paper-on-ink: #F4F1E8;
+  --steel-on-ink: #8C96A2;
+  --copper-on-ink: #FF704D;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #F4F1E8;
+    --paper: #15171C;
+    --copper: #FF704D;
+    --copper-hover: #FF8566;
+    --copper-ink: #FF704D;
+    --steel: #8C96A2;
+    --fog: #22252C;
+    --raised-ink: #17191E;
+    --hairline: rgba(244, 241, 232, 0.14);
+    --hairline-on-ink: rgba(244, 241, 232, 0.14);
+    --raised-card: rgba(28, 30, 36, 0.85);
+    --ink-ground: #0C0D10;
+    --paper-on-ink: #F4F1E8;
+    --steel-on-ink: #8C96A2;
+    --copper-on-ink: #FF704D;
+  }
+}
+
+/* --- 2. Reset/base ------------------------------------------------------ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; overflow-x: hidden; width: 100%; }
+
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  overflow-wrap: break-word;
+}
+
+.wrap {
+  width: 100%;
+  max-width: min(1400px, 92vw);
+  margin-inline: auto;
+  padding-inline: 20px;
+  box-sizing: border-box;
+}
+
+/* --- 3. Chrome ---------------------------------------------------------- */
+
+/* Utility bar */
+.util-bar {
+  border-bottom: 1px solid var(--hairline);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--steel);
+  padding: 8px 0;
+  width: 100%;
+  overflow-wrap: anywhere;
+}
+.util-entity {
+  /* Long unbreakable strings get their break rule here, not from a global
+     body rule: a global `word-break: break-word` is what split the year
+     2026 into "202 / 6" inside a stat card at 1920. */
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.util-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--copper);
+}
+
+/* Header */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--hairline);
+  width: 100%;
+}
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+.logo-slot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--ink);
+}
+.logo-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 2px;
+}
+.brand-wordmark {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+nav ul {
+  display: flex;
+  list-style: none;
+  gap: 24px;
+  align-items: center;
+}
+/* Mobile navigation: details/summary menu (no JS) */
+.nav-menu { display: none; }
+@media (max-width: 768px) {
+  nav ul { display: none; }
+  .nav-menu {
+    display: block;
+    position: relative;
+  }
+  .nav-menu summary {
+    list-style: none;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink);
+    padding: 8px 12px;
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .nav-menu summary::-webkit-details-marker { display: none; }
+  .nav-menu[open] .nav-menu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background: color-mix(in srgb, var(--paper) 96%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 8px 0;
+    min-width: 200px;
+    z-index: 200;
+    list-style: none;
+  }
+  .nav-menu-list { display: none; }
+  .nav-menu-list li { display: block; }
+  .nav-menu-list a {
+    display: block;
+    padding: 10px 20px;
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.15s;
+  }
+  .nav-menu-list a:hover { color: var(--copper-ink); }
+  .nav-menu-list .nav-cta {
+    margin: 8px 12px;
+    text-align: center;
+    display: block;
+  }
+}
+nav a {
+  color: var(--steel);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.15s;
+}
+nav a:hover {
+  color: var(--ink);
+}
+.nav-cta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--paper);
+  background: var(--ink);
+  padding: 8px 14px;
+  border-radius: 4px;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.nav-cta:hover { opacity: 0.9; }
+
+/* Footer */
+footer {
+  padding: 64px 0 48px;
+  border-top: 1px solid var(--hairline);
+  background-color: var(--paper);
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 48px;
+}
+.footer-brand h3 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.footer-brand p {
+  color: var(--steel);
+  font-size: 14px;
+}
+.footer-mark {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 16px;
+  color: var(--ink);
+}
+.footer-col h5 {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--steel);
+  margin-bottom: 14px;
+}
+.footer-col a {
+  display: block;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 14px;
+  margin-bottom: 10px;
+  transition: color 0.15s;
+  overflow-wrap: anywhere;
+}
+.footer-col a:hover { color: var(--copper-ink); }
+.footer-bottom {
+  border-top: 1px solid var(--hairline);
+  padding-top: 24px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--steel);
+}
+/* Legacy footer-top for any product page still using it */
+.footer-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 32px;
+  margin-bottom: 48px;
+}
+@media (max-width: 640px) {
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .footer-wordmark-text {
+    flex-wrap: wrap;
+    white-space: normal;
+    font-size: clamp(64px, 18vw, 86px);
+  }
+  .footer-wordmark-space {
+    width: 100%;
+    height: 0;
+  }
+}
+
+/* --- 4. Blocks ---------------------------------------------------------- */
+
+/* Hero — premium full-bleed ink ground */
+.hero {
+  position: relative;
+  background-color: var(--ink-ground);
+  color: var(--paper-on-ink);
+  padding: clamp(80px, 10vw, 140px) 0 clamp(64px, 8vw, 96px);
+  border-bottom: none;
+  width: 100%;
+  overflow: hidden;
+}
+.hero-mark {
+  position: absolute;
+  top: 50%;
+  right: 8%;
+  transform: translateY(-50%);
+  width: clamp(260px, 30vw, 440px);
+  height: auto;
+  opacity: 0.06;
+  pointer-events: none;
+  color: var(--paper-on-ink);
+}
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--copper-on-ink);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  margin-bottom: 24px;
+}
+h1 {
+  text-wrap: balance; /* keeps 'order.' from falling alone on the last line */
+  font-family: var(--font-display);
+  font-size: clamp(56px, 8vw, 112px);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--paper-on-ink);
+  width: 100%;
+  margin-bottom: 12px;
+}
+/* Copper hairline draw under headline */
+.hero h1::after {
+  content: "";
+  display: block;
+  width: 0;
+  height: 1px;
+  background: var(--copper-on-ink);
+  margin-top: 16px;
+  animation: copper-draw 900ms ease-out 300ms forwards;
+}
+@keyframes copper-draw {
+  to { width: min(320px, 50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero h1::after { width: min(320px, 50%); animation: none; }
+}
+
+/* Marquee slide — one full cycle at 50% because the track is duplicated */
+@keyframes marquee-slide {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; }
+}
+
+/* Ken Burns — slow scale for typographic plates */
+@keyframes ken-burns {
+  from { transform: scale(1); }
+  to { transform: scale(1.04); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .typo-plate-name { animation: none; }
+}
+
+/* Footer letter rise — scroll-driven per-letter reveal */
+@keyframes footer-letter-rise {
+  from { opacity: 0; transform: translateY(26px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.footer-wordmark-text span {
+  opacity: 0;
+  transform: translateY(26px);
+}
+@supports (animation-timeline: view()) {
+  .footer-wordmark-text span {
+    animation: footer-letter-rise linear both;
+    animation-timeline: view();
+    animation-range: entry calc(var(--i, 0) * 3%) entry calc(30% + var(--i, 0) * 3%);
+  }
+}
+@supports not (animation-timeline: view()) {
+  .footer-wordmark-text span { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .footer-wordmark-text span { opacity: 1; transform: none; animation: none; }
+}
+.hero-lede {
+  font-size: clamp(16px, 2vw, 20px);
+  color: var(--steel-on-ink);
+  line-height: 1.6;
+  max-width: 62ch;
+  margin-bottom: 0;
+}
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  margin-top: clamp(32px, 4vw, 48px);
+  flex-wrap: wrap;
+}
+.hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin-top: clamp(40px, 5vw, 64px);
+  border-top: 1px solid var(--hairline-on-ink);
+  width: 100%;
+}
+.hero-stat {
+  flex: 1 1 200px;
+  min-width: 0;
+  padding: 24px 0;
+  border-right: 1px solid var(--hairline-on-ink);
+}
+.hero-stat:last-child { border-right: none; }
+.hero-stat small {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--steel-on-ink);
+  margin-bottom: 6px;
+}
+.hero-stat b {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--paper-on-ink);
+}
+@media (max-width: 600px) {
+  .hero-stats { flex-direction: column; }
+  .hero-stat { border-right: none; border-bottom: 1px solid var(--hairline-on-ink); }
+  .hero-stat:last-child { border-bottom: none; }
+}
+
+/* Sections — alternating grounds with editorial numbering */
+section {
+  padding: clamp(120px, 16vw, 220px) 0;
+  border-bottom: none;
+  width: 100%;
+}
+/* Ink ground sections */
+section.ink-ground {
+  position: relative;
+  background-color: var(--ink-ground);
+  color: var(--paper-on-ink);
+}
+section.ink-ground .section-tag { color: var(--copper-on-ink); }
+section.ink-ground .section-title { color: var(--paper-on-ink); }
+section.ink-ground .section-desc { color: var(--steel-on-ink); }
+section.ink-ground .card-link { color: var(--paper-on-ink); }
+section.ink-ground .card-link:hover { color: var(--copper-on-ink); }
+
+.section-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--copper-ink);
+  margin-bottom: 12px;
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 4.5vw, 56px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin-bottom: 16px;
+  width: 100%;
+}
+.section-desc {
+  font-size: 16px;
+  color: var(--steel);
+  max-width: 72ch;
+  line-height: 1.7;
+  margin-bottom: 48px;
+}
+
+/* Grid & Cards */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+}
+@media (max-width: 780px) {
+  .grid-2 { grid-template-columns: 1fr; }
+}
+
+.card {
+  background: var(--raised-card);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  backdrop-filter: blur(8px);
+  transition: border-color 0.2s, transform 0.2s;
+  min-width: 0;
+  width: 100%;
+}
+.card:hover {
+  border-color: var(--steel);
+  transform: translateY(-2px);
+}
+.card-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--copper-ink);
+  margin-bottom: 10px;
+}
+.card h3 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+.card p {
+  color: var(--steel);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.card-meta {
+  border-top: 1px solid var(--hairline);
+  padding-top: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--steel);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.card-link {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.15s;
+}
+.card-link:hover { color: var(--copper-ink); }
+
+/* Product plate — the framed screenshot */
+.product-plate {
+  border: 1px solid var(--hairline-on-ink);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: var(--plate-shadow);
+}
+.product-plate img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.plate-caption {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--steel-on-ink);
+  margin-top: 14px;
+}
+
+/* Bench list — editorial with copper index */
+.bench-heading {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--steel-on-ink);
+  margin-bottom: 4px;
+  margin-top: 64px;
+}
+.bench { list-style: none; }
+.bench li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: baseline;
+  padding: 24px 0;
+  border-top: 1px solid var(--hairline-on-ink);
+}
+.bench-index {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--copper-on-ink);
+  min-width: 28px;
+}
+.bench h4 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--paper-on-ink);
+}
+.bench-status {
+  display: block;
+  margin-top: 5px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--steel-on-ink);
+}
+.bench p {
+  color: var(--steel-on-ink);
+  font-size: 15px;
+  line-height: 1.65;
+}
+.bench .card-link { color: var(--paper-on-ink); }
+.bench .card-link:hover { color: var(--copper-on-ink); }
+
+/* Honesty ledger — two-column on paper */
+.ledger {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.ledger-row {
+  display: contents;
+}
+.ledger-row > * {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 14px;
+}
+.ledger-row:last-child > * { border-bottom: none; }
+.ledger-control {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--paper);
+  border-right: 1px solid var(--hairline);
+}
+.ledger-state {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--steel);
+  background: var(--paper);
+  display: flex;
+  align-items: center;
+}
+
+/* Table */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 0;
+  border: none;
+  background: transparent;
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.data-table th, .data-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--hairline);
+  text-align: left;
+}
+.data-table th {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--steel);
+}
+.data-table td:first-child {
+  font-family: var(--font-mono);
+  color: var(--steel);
+  font-size: 13px;
+}
+@media (max-width: 640px) {
+  .data-table, .data-table thead, .data-table tbody, .data-table tr, .data-table th, .data-table td {
+    display: block;
+    width: 100%;
+  }
+  .data-table thead { display: none; }
+  .data-table tr {
+    border-bottom: 1px solid var(--hairline);
+    padding: 16px;
+  }
+  .data-table td {
+    padding: 4px 0;
+    border: none;
+  }
+  .data-table td:first-child {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--copper-ink);
+    margin-bottom: 2px;
+  }
+  .data-table td:nth-child(2) {
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .data-table td:last-child {
+    font-size: 12px;
+    color: var(--steel);
+  }
+  .ledger {
+    grid-template-columns: 1fr;
+  }
+  .ledger-control {
+    border-right: none;
+    border-bottom: none;
+    padding-bottom: 4px;
+    font-weight: 600;
+  }
+  .ledger-state {
+    padding-top: 0;
+  }
+}
+
+/* Hero — scale pass: full viewport height (home page only) */
+.hero--full {
+  min-height: calc(100dvh - 100px);
+  padding-top: clamp(40px, 5vw, 72px);
+  padding-bottom: clamp(40px, 5vw, 64px);
+}
+.hero--full h1 { font-size: clamp(48px, 6vw, 88px); }
+
+/* Hero marquee — sliding word strip */
+.marquee-wrap {
+  width: 100%;
+  overflow: hidden;
+  margin-bottom: clamp(24px, 4vw, 48px);
+}
+.marquee-track {
+  display: flex;
+  align-items: baseline;
+  white-space: nowrap;
+  width: max-content;
+  animation: marquee-slide 60s linear infinite;
+  will-change: transform;
+}
+.marquee-track:hover { animation-play-state: paused; }
+.marquee-word {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(96px, 14vw, 200px);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.marquee-word--paper { color: var(--paper-on-ink); }
+.marquee-word--copper { color: var(--copper-on-ink); }
+.marquee-dot {
+  color: var(--copper-on-ink);
+  padding: 0 clamp(12px, 1.5vw, 24px);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(96px, 14vw, 200px);
+  line-height: 1;
+}
+
+/* Oversized section display titles — two-tone, two-line */
+.section-display { margin-bottom: clamp(16px, 2vw, 24px); }
+.section-display-line {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(64px, 9.5vw, 184px);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+/* Exception: --copper is AA-safe as display text at 64px 700 weight and above
+   (3.04:1 passes the large-text threshold of 3.0). Do not use on smaller text. */
+.section-display-line--copper { color: var(--copper); }
+.section-display-line--ink { color: var(--ink); }
+section.ink-ground .section-display-line--copper { color: var(--copper-on-ink); }
+section.ink-ground .section-display-line--ink { color: var(--paper-on-ink); }
+.section-display-sub {
+  font-size: clamp(16px, 2vw, 20px);
+  color: var(--steel);
+  margin-top: clamp(16px, 2vw, 24px);
+  margin-bottom: clamp(16px, 2vw, 28px);
+  max-width: 72ch;
+  line-height: 1.6;
+}
+section.ink-ground .section-display-sub { color: var(--steel-on-ink); }
+
+/* Colour bands — full-bleed between sections */
+.band { width: 100%; overflow: hidden; }
+.band--copper {
+  background-color: var(--copper);
+  padding: clamp(64px, 10vw, 120px) 0;
+}
+.band--copper .band-text {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(28px, 4vw, 56px);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--ink-ground);
+  text-align: left;
+  text-wrap: balance;
+  max-width: 22ch;
+}
+.band--ink {
+  background-color: var(--ink-ground);
+  padding: clamp(40px, 6vw, 80px) 0;
+}
+.band--ink .marquee-track { animation-duration: 40s; }
+.band--ink .marquee-word {
+  font-size: clamp(48px, 7vw, 112px);
+}
+.band--ink .marquee-dot {
+  font-size: clamp(48px, 7vw, 112px);
+}
+.band--ink .marquee-word--dim {
+  color: color-mix(in srgb, var(--paper-on-ink) 40%, transparent);
+}
+.band--ink .marquee-word--bright {
+  color: var(--paper-on-ink);
+}
+
+/* Work strip — large alternating plates */
+.work-strip { display: grid; gap: clamp(64px, 10vw, 120px); margin-top: clamp(48px, 6vw, 96px); }
+.work-plate {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(32px, 4vw, 64px);
+  align-items: center;
+}
+.work-plate--reverse .work-plate-visual { order: 2; }
+.work-plate--reverse .work-plate-info { order: 1; }
+.work-plate-visual {
+  width: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+}
+/* Typographic plate: product name as the visual, no screenshot */
+.typo-plate {
+  background-color: var(--raised-ink);
+  box-shadow: inset 0 0 0 1px var(--hairline-on-ink);
+  padding: clamp(48px, 6vw, 96px) clamp(24px, 3vw, 48px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: clamp(240px, 30vw, 400px);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.typo-plate-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(48px, 6vw, 96px);
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--paper-on-ink);
+}
+.typo-plate-stage {
+  font-family: var(--font-mono);
+  font-size: clamp(12px, 1.5vw, 16px);
+  color: var(--steel-on-ink);
+  margin-top: clamp(12px, 2vw, 24px);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.work-plate-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.work-plate-name {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 3.5vw, 48px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+section.ink-ground .work-plate-name { color: var(--paper-on-ink); }
+.work-plate-line {
+  font-size: 15px;
+  color: var(--steel);
+  line-height: 1.6;
+  max-width: 48ch;
+}
+section.ink-ground .work-plate-line { color: var(--steel-on-ink); }
+.work-plate-stage {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--copper-ink);
+}
+section.ink-ground .work-plate-stage { color: var(--copper-on-ink); }
+section.ink-ground .product-plate { box-shadow: none; }
+
+/* Stat cards — tilted true figures */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(16px, 2vw, 24px);
+  padding: clamp(64px, 8vw, 120px) 0;
+}
+.stat-card {
+  padding: clamp(28px, 3vw, 48px) clamp(20px, 2vw, 32px);
+  border-radius: 4px;
+  text-align: center;
+}
+.stat-card:nth-child(odd) {
+  background-color: var(--copper);
+  color: var(--ink-ground);
+  transform: rotate(-2deg);
+}
+.stat-card:nth-child(even) {
+  background-color: var(--ink-ground);
+  color: var(--paper-on-ink);
+  transform: rotate(2deg);
+}
+.stat-card-number {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(48px, 6vw, 80px);
+  line-height: 1;
+  margin-bottom: 8px;
+  white-space: nowrap;
+}
+.stat-card:nth-child(odd) .stat-card-number { color: var(--ink-ground); }
+.stat-card:nth-child(even) .stat-card-number { color: var(--paper-on-ink); }
+.stat-card-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.stat-card:nth-child(odd) .stat-card-label { color: var(--ink-ground); }
+.stat-card:nth-child(even) .stat-card-label { color: var(--steel-on-ink); }
+
+/* Full-width plate for product pages */
+.plate-full {
+  width: 100%;
+}
+.plate-full .product-plate {
+  box-shadow: var(--plate-shadow);
+}
+
+/* Footer giant wordmark — scale pass */
+.footer-wordmark {
+  overflow: hidden;
+  padding: clamp(16px, 3vw, 32px) 0 0;
+}
+.footer-wordmark-text {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: min(clamp(40px, 12.4vw, 190px), 22vh);
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.footer-wordmark-text span {
+  display: inline-block;
+  transition: transform 0.2s ease-out, color 0.2s ease-out;
+}
+/* Space spans between words */
+.footer-wordmark-space { width: 0.28em; }
+.footer-wordmark-text span:hover {
+  transform: translateY(-14px);
+  color: var(--copper-ink);
+}
+
+/* --- Focus styles ------------------------------------------------------- */
+a:focus-visible,
+button:focus-visible,
+.nav-cta:focus-visible,
+.card-link:focus-visible,
+.draw-underline:focus-visible,
+.footer-col a:focus-visible,
+.nav-menu summary:focus-visible {
+  outline: 2px solid var(--copper-ink);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+/* On ink grounds the outline uses paper for visibility */
+section.ink-ground a:focus-visible,
+section.ink-ground button:focus-visible,
+.hero a:focus-visible,
+.hero button:focus-visible,
+.band--ink a:focus-visible {
+  outline-color: var(--paper-on-ink);
+}
+/* On copper band the outline uses ink */
+.band--copper a:focus-visible {
+  outline-color: var(--ink-ground);
+}
+
+/* --- Textures ----------------------------------------------------------- */
+/* Ink grain: hero and ink sections at 14% opacity */
+.hero::before,
+section.ink-ground::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("textures/ink-grain-16x9.webp") center / cover scroll;
+  opacity: 0.14;
+  mix-blend-mode: normal;
+  pointer-events: none;
+  z-index: 0;
+}
+.hero > :not(.hero-mark),
+section.ink-ground > * { position: relative; z-index: 1; }
+
+/* Paper fibre: paper sections at 10% */
+section:not(.ink-ground):not(.hero)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("textures/paper-fibre-16x9.webp") center / cover scroll;
+  opacity: 0.10;
+  mix-blend-mode: normal;
+  pointer-events: none;
+  z-index: 0;
+}
+section:not(.ink-ground):not(.hero) {
+  position: relative;
+}
+section:not(.ink-ground):not(.hero) > * { position: relative; z-index: 1; }
+
+/* Copper foil: copper band at 30% */
+.band--copper {
+  position: relative;
+}
+.band--copper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("textures/copper-foil-16x9.webp") center / cover scroll;
+  opacity: 0.30;
+  mix-blend-mode: normal;
+  pointer-events: none;
+  z-index: 0;
+}
+.band--copper > * { position: relative; z-index: 1; }
+
+/* --- 5. Motion ---------------------------------------------------------- */
+
+/* Scroll reveals — CSS animation-timeline: view() with @supports fallback */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+}
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: reveal-in linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 30%;
+  }
+  @keyframes reveal-in {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+}
+/* Stagger for lists: each child delays by 60ms */
+.reveal-stagger > *:nth-child(1) { --reveal-delay: 0ms; }
+.reveal-stagger > *:nth-child(2) { --reveal-delay: 60ms; }
+.reveal-stagger > *:nth-child(3) { --reveal-delay: 120ms; }
+.reveal-stagger > *:nth-child(4) { --reveal-delay: 180ms; }
+.reveal-stagger > *:nth-child(5) { --reveal-delay: 240ms; }
+.reveal-stagger > *:nth-child(6) { --reveal-delay: 300ms; }
+
+/* Fallback: if view() is not supported, show everything */
+@supports not (animation-timeline: view()) {
+  .reveal { opacity: 1; transform: none; }
+}
+
+/* Reduced motion: show the end state, skip animation */
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; animation: none; }
+}
+
+/* Link hover — copper underline draws from left */
+a.draw-underline {
+  position: relative;
+  text-decoration: none;
+}
+a.draw-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0;
+  height: 1px;
+  background: var(--copper-ink);
+  transition: width 180ms ease-out;
+}
+a.draw-underline:hover::after {
+  width: 100%;
+}
+section.ink-ground a.draw-underline::after {
+  background: var(--copper-on-ink);
+}
+
+/* --- 6. Responsive ------------------------------------------------------ */
+
+@media (max-width: 860px) {
+  .bench li { grid-template-columns: auto 1fr; gap: 12px; }
+  .bench li > a { grid-column: 1 / -1; }
+}
+@media (max-width: 600px) {
+  .bench li { grid-template-columns: 1fr; gap: 8px; }
+  .bench-index { margin-bottom: -4px; }
+  .hero-mark { display: none; }
+  /* C1-9: compact util bar on phones. The city cell goes, and the legal
+     suffix goes with it, so the bar is one line instead of two. The claim
+     is unchanged: the name and "in formation" both survive. */
+  .util-bar .status-pill { display: none; }
+  .util-long { display: none; }
+}
+
+/* The giant footer wordmark on a phone.
+   There is an identical rule in the responsive block near the top of this
+   file, and it never applied: it is written BEFORE `.footer-wordmark-text`
+   is defined, so the base rule wins on source order at equal specificity.
+   Measured at 390 before this: 48px on one nowrap line, 333px of glyphs in
+   a 319px box, clipped by the wrapper's `overflow: hidden` — the last
+   letter of "Index" was cut off. Here, after the base rule, it applies:
+   three stacked lines at ~70px. */
+@media (max-width: 640px) {
+  .footer-wordmark-text {
+    flex-wrap: wrap;
+    white-space: normal;
+    font-size: clamp(56px, 17vw, 86px);
+    line-height: 0.9;
+  }
+  .footer-wordmark-space {
+    flex-basis: 100%;
+    width: 0;
+    height: 0;
+  }
+}
+
+@media (max-width: 860px) {
+  .work-plate { grid-template-columns: 1fr; }
+  .work-plate--reverse .work-plate-visual { order: 0; }
+  .work-plate--reverse .work-plate-info { order: 0; }
+}
+@media (max-width: 640px) {
+  .stat-row { grid-template-columns: 1fr 1fr; }
+  .stat-card:nth-child(odd) { transform: rotate(-1deg); }
+  .stat-card:nth-child(even) { transform: rotate(1deg); }
+}
+@media (max-width: 400px) {
+  .stat-row { grid-template-columns: 1fr; }
+  .stat-card:nth-child(odd),
+  .stat-card:nth-child(even) { transform: none; }
+}
+
+/* Bullet markers set inline on the product pages sit in a flex row. Without a
+   shrink guard the two-character "//" splits across the wrap, printing a stray
+   slash on every visual line of the bullet. */
+.wrap li > span:first-child {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Product register — ink-ground ledger in the products section */
+.product-register { margin-bottom: clamp(48px, 6vw, 96px); }
+.product-register .ledger { border-color: var(--hairline-on-ink); }
+.product-register .ledger-control {
+  background: var(--ink-ground);
+  color: var(--paper-on-ink);
+  border-color: var(--hairline-on-ink);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(18px, 2vw, 24px);
+}
+.product-register .ledger-state {
+  background: var(--ink-ground);
+  color: var(--steel-on-ink);
+  border-color: var(--hairline-on-ink);
+}
+
+/* Feature line — the // bullet rows on product pages */
+.feature-list {
+  list-style: none;
+  display: grid;
+  gap: 18px;
+}
+.feature-line {
+  display: flex;
+  gap: 12px;
+  font-size: 15px;
+  color: var(--steel);
+}
+.feature-line > span:first-child {
+  color: var(--copper-ink);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Plate heading on ink — work-plate name on ink ground */
+.plate-heading-on-ink {
+  color: var(--paper-on-ink);
+}
+
+/* Intent block — outlined, for bench (design-stage) product pages */
+.intent-block {
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  padding: clamp(28px, 4vw, 48px);
+}
+.intent-block-heading {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(20px, 2.5vw, 28px);
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  line-height: 1.1;
+  margin-bottom: clamp(20px, 3vw, 32px);
+  color: var(--ink);
+}
+.intent-list {
+  list-style: none;
+  display: grid;
+  gap: 18px;
+}
+.intent-list li {
+  display: flex;
+  gap: 12px;
+  font-size: 15px;
+  color: var(--steel);
+}
+.intent-list li > span:first-child {
+  color: var(--copper-ink);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Honesty box — shared across product pages */
+.honesty-box {
+  border: 1px dashed var(--hairline);
+  padding: 24px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--steel);
+  margin-top: 64px;
+}
+.honesty-box b { color: var(--ink); }
+
+/* Product-page honesty badge */
+.honesty-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  border: 1px solid var(--hairline-on-ink);
+  padding: 8px 16px;
+  border-radius: 4px;
+  color: var(--steel-on-ink);
+  margin-top: 16px;
+}
+
+
+/* --- 7. Skip link ------------------------------------------------------- */
+/* First thing in the tab order and invisible until it has focus, so a
+   keyboard or screen-reader user does not walk the whole header on every
+   page to reach the text. */
+.skip-link {
+  position: absolute;
+  left: 8px;
+  top: -64px;
+  z-index: 300;
+  padding: 10px 16px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 3px;
+  transition: top 140ms ease;
+}
+.skip-link:focus-visible { top: 8px; }
+
+/* --- 8. Back to top ----------------------------------------------------- */
+/* The home page is around 9,700px tall on a phone. This is an anchor, not a
+   script: the site carries no JavaScript and this is not worth breaking that
+   for. Where scroll-driven animation is supported it fades in past the fold;
+   where it is not, it simply stays visible, which is a harmless fallback. */
+.to-top {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 120;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink);
+  color: var(--paper);
+  text-decoration: none;
+  font-size: 18px;
+  line-height: 1;
+  border-radius: 50%;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+}
+.to-top:hover { background: var(--copper-ink); }
+@keyframes to-top-in { from { opacity: 0; } to { opacity: 1; } }
+@supports (animation-timeline: scroll()) {
+  .to-top {
+    opacity: 0;
+    animation: to-top-in linear both;
+    animation-timeline: scroll(root);
+    animation-range: 400px 800px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .to-top { opacity: 1; animation: none; }
+  .skip-link { transition: none; }
+}
+
+/* --- 9. Print ----------------------------------------------------------- */
+/* This site gets printed and saved as PDF by lawyers, partners and clients.
+   Ink grounds and textures waste a cartridge and make the type unreadable on
+   paper, so print gets black on white, no chrome, and link destinations
+   spelled out because a printed page cannot be clicked. */
+@media print {
+  :root {
+    --paper: #FFFFFF;
+    --surface: #FFFFFF;
+    --ink: #000000;
+    --support: #333333;
+    --ink-ground: #FFFFFF;
+    --paper-on-ink: #000000;
+    --steel: #333333;
+    --steel-on-ink: #333333;
+    --copper: #000000;
+    --copper-ink: #000000;
+    --copper-on-ink: #000000;
+    --hairline: rgba(0, 0, 0, 0.3);
+    --hairline-on-ink: rgba(0, 0, 0, 0.3);
+  }
+  .util-bar,
+  header,
+  .marquee-wrap,
+  .band,
+  .hero-mark,
+  .to-top,
+  .skip-link,
+  .footer-wordmark,
+  .hero-actions { display: none !important; }
+  body { background: #FFFFFF !important; color: #000000 !important; font-size: 11pt; }
+  section, .hero { padding-block: 18pt !important; background: #FFFFFF !important; }
+  section::before, .hero::before { display: none !important; }
+  .wrap { max-width: 100% !important; padding-inline: 0 !important; }
+  h1 { font-size: 24pt; }
+  .section-display-line { font-size: 17pt; }
+  h2 { font-size: 15pt; }
+  a { color: #000000; text-decoration: underline; }
+  main a[href^="http"]::after,
+  main a[href^="mailto"]::after {
+    content: " (" attr(href) ")";
+    font-size: 8pt;
+    word-break: break-all;
+  }
+  .data-table, .ledger, .work-plate, .stat-card { break-inside: avoid; }
+  h1, h2, h3 { break-after: avoid; }
+  .product-plate img { max-width: 60% !important; }
+}

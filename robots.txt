@@ -1,0 +1,7 @@
+# The Raven Index
+# Everything here is meant to be found. Nothing on this site is private and
+# there is no user area to keep out of an index.
+User-agent: *
+Allow: /
+
+Sitemap: https://theravenindex.com/sitemap.xml

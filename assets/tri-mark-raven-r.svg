@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="The Raven Index mark: a capital R with a raven perched inside its counter">
+  <title>The Raven Index</title>
+  <!-- Geometry: 80px stem, 56px bowl ring around a 96px counter, straight leg. Ink on transparent. -->
+  <g fill="#0C0D10">
+    <!-- Stem -->
+    <path d="M112 64 H192 V448 H112 Z"/>
+    <!-- Bowl: full D minus the counter (evenodd) -->
+    <path fill-rule="evenodd" d="M192 64 H300 A104 104 0 0 1 300 272 H192 Z M192 120 H300 A48 48 0 0 1 300 216 H192 Z"/>
+    <!-- Leg -->
+    <path d="M238 272 H322 L406 448 H322 Z"/>
+    <!-- Raven, perched on the counter floor (y=216), facing right -->
+    <path d="M200 211 C212 207 224 199 232 187 C242 172 256 162 274 162 C288 162 297 165 304 156 C311 148 320 146 327 150 C332 153 336 159 339 166 L345 168 L337 171 C336 181 331 190 322 195 C314 201 302 204 291 206 C284 208 277 210 271 211 L261 212 L250 212 L243 212 L238 214 C231 215 222 215 215 214 C208 213 203 213 200 211 Z"/>
+    <!-- Legs -->
+    <path d="M262 212 L263 216 H268 L267 212 Z M282 209 L284 216 H289 L287 209 Z"/>
+  </g>
+  <!-- Eye: a paper dot so the head reads at size -->
+  <circle cx="322" cy="160" r="3.5" fill="#F4F2EC"/>
+</svg>
