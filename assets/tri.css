@@ -52,6 +52,11 @@
 
 /* --- 1. Tokens ---------------------------------------------------------- */
 :root {
+  --print-paper: #FFFFFF;
+  --print-ink: #000000;
+  --print-steel: #333333;
+  --print-hairline: rgba(0, 0, 0, 0.3);
+  --to-top-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
   --ink: #0C0D10;
   --paper: #F4F1E8;
   --copper: #E6603F;
@@ -321,7 +326,7 @@ footer {
   margin-bottom: 16px;
   color: var(--ink);
 }
-.footer-col h5 {
+.footer-col h3 {
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
@@ -459,10 +464,7 @@ h1 {
   from { opacity: 0; transform: translateY(26px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.footer-wordmark-text span {
-  opacity: 0;
-  transform: translateY(26px);
-}
+.footer-wordmark-text span { opacity: 1; transform: none; }
 @supports (animation-timeline: view()) {
   .footer-wordmark-text span {
     animation: footer-letter-rise linear both;
@@ -1148,10 +1150,7 @@ section:not(.ink-ground):not(.hero) > * { position: relative; z-index: 1; }
 /* --- 5. Motion ---------------------------------------------------------- */
 
 /* Scroll reveals — CSS animation-timeline: view() with @supports fallback */
-.reveal {
-  opacity: 0;
-  transform: translateY(18px);
-}
+.reveal { opacity: 1; transform: none; }
 @supports (animation-timeline: view()) {
   .reveal {
     animation: reveal-in linear both;
@@ -1411,7 +1410,7 @@ section.ink-ground a.draw-underline::after {
   font-size: 18px;
   line-height: 1;
   border-radius: 50%;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+  box-shadow: var(--to-top-shadow);
 }
 .to-top:hover { background: var(--copper-ink); }
 @keyframes to-top-in { from { opacity: 0; } to { opacity: 1; } }
@@ -1428,26 +1427,141 @@ section.ink-ground a.draw-underline::after {
   .skip-link { transition: none; }
 }
 
-/* --- 9. Print ----------------------------------------------------------- */
+/* --- 9. Showcase -------------------------------------------------------- */
+/* Showcase diagrams. Text never disappears; only the decorative rail moves. */
+.flow-section { padding-block: clamp(64px, 8vw, 112px); scroll-margin-top: 80px; }
+.flow-title {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 3.2vw, 46px);
+  font-weight: 600;
+  line-height: 1.18;
+  letter-spacing: -0.025em;
+  max-width: 30ch;
+  text-wrap: balance;
+  margin-bottom: 28px;
+}
+.client-flow-title { margin-top: 32px; }
+.flow { position: relative; }
+.flow-pause { accent-color: var(--copper); width: 18px; height: 18px; vertical-align: middle; }
+.flow-control {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-left: 8px;
+  color: var(--steel-on-ink);
+  font: 12px var(--font-mono);
+  cursor: pointer;
+}
+.flow-pause:focus-visible { outline: 2px solid var(--paper-on-ink); outline-offset: 4px; }
+.flow-steps {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(var(--steps), minmax(0, 1fr));
+  margin-top: 20px;
+  border-bottom: 1px solid var(--hairline-on-ink);
+}
+.flow-step { min-width: 0; padding: 24px; border-left: 1px solid var(--hairline-on-ink); }
+.flow-step:last-child { border-right: 1px solid var(--hairline-on-ink); }
+.flow-mark {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font: 13px var(--font-mono);
+  color: var(--steel-on-ink);
+  margin-bottom: 28px;
+}
+.flow-rail { display: block; flex: 1; height: 3px; background: var(--hairline-on-ink); }
+.flow-rail::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--copper);
+  transform-origin: left;
+}
+.flow-step p {
+  font-family: var(--font-display);
+  font-size: clamp(19px, 1.8vw, 25px);
+  line-height: 1.4;
+  color: var(--paper-on-ink);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .flow-rail::after {
+    animation: flow-pass var(--cycle) linear infinite backwards;
+    animation-delay: calc(var(--step) * 3s);
+  }
+  .flow-pause:checked ~ .flow-steps .flow-rail::after { animation-play-state: paused; }
+}
+@keyframes flow-pass {
+  0% { transform: scaleX(0); }
+  24%, 75% { transform: scaleX(1); }
+  100% { transform: scaleX(0); }
+}
+.showcase { padding-block: clamp(40px, 5vw, 72px); }
+.showcase-links { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--hairline); }
+.showcase-links a {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+  padding: 24px 20px;
+  border-bottom: 1px solid var(--hairline);
+  color: var(--ink);
+  text-decoration: none;
+  font: 600 24px var(--font-display);
+}
+.showcase-links a:hover { background: var(--fog); }
+.showcase-stage { grid-row: 2; font: 12px/1.6 var(--font-mono); color: var(--steel); }
+.showcase-links a > :last-child { grid-column: 2; grid-row: 1; }
+@media (max-width: 860px) {
+  .showcase-links { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .flow-steps { grid-template-columns: 1fr; }
+  .flow-step { display: grid; grid-template-columns: 52px 1fr; gap: 20px; padding: 24px 16px; border-right: 1px solid var(--hairline-on-ink); border-top: 1px solid var(--hairline-on-ink); }
+  .flow-mark { display: flex; flex-direction: column; gap: 12px; margin: 0; }
+  .flow-rail { width: 3px; min-height: 32px; }
+  .flow-rail::after { transform-origin: top; }
+  @keyframes flow-pass {
+    0% { transform: scaleY(0); }
+    24%, 75% { transform: scaleY(1); }
+    100% { transform: scaleY(0); }
+  }
+}
+@media (max-width: 480px) {
+  .showcase-links { grid-template-columns: 1fr; }
+  .showcase-links a { padding-inline: 0; }
+  .section-display-line { font-size: clamp(38px, 10.8vw, 52px); }
+}
+/* End states override all earlier animation declarations, including the marquee. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .flow-pause, .flow-control { display: none; }
+  .flow-rail::after { transform: none; }
+}
+
+/* --- 10. Print ---------------------------------------------------------- */
 /* This site gets printed and saved as PDF by lawyers, partners and clients.
    Ink grounds and textures waste a cartridge and make the type unreadable on
    paper, so print gets black on white, no chrome, and link destinations
    spelled out because a printed page cannot be clicked. */
 @media print {
+  *, *::before, *::after { animation: none !important; }
+  .flow-pause, .flow-control { display: none; }
   :root {
-    --paper: #FFFFFF;
-    --surface: #FFFFFF;
-    --ink: #000000;
-    --support: #333333;
-    --ink-ground: #FFFFFF;
-    --paper-on-ink: #000000;
-    --steel: #333333;
-    --steel-on-ink: #333333;
-    --copper: #000000;
-    --copper-ink: #000000;
-    --copper-on-ink: #000000;
-    --hairline: rgba(0, 0, 0, 0.3);
-    --hairline-on-ink: rgba(0, 0, 0, 0.3);
+    --paper: var(--print-paper);
+    --surface: var(--print-paper);
+    --ink: var(--print-ink);
+    --support: var(--print-steel);
+    --ink-ground: var(--print-paper);
+    --paper-on-ink: var(--print-ink);
+    --steel: var(--print-steel);
+    --steel-on-ink: var(--print-steel);
+    --copper: var(--print-ink);
+    --copper-ink: var(--print-ink);
+    --copper-on-ink: var(--print-ink);
+    --hairline: var(--print-hairline);
+    --hairline-on-ink: var(--print-hairline);
   }
   .util-bar,
   header,
@@ -1458,14 +1572,14 @@ section.ink-ground a.draw-underline::after {
   .skip-link,
   .footer-wordmark,
   .hero-actions { display: none !important; }
-  body { background: #FFFFFF !important; color: #000000 !important; font-size: 11pt; }
-  section, .hero { padding-block: 18pt !important; background: #FFFFFF !important; }
+  body { background: var(--print-paper) !important; color: var(--print-ink) !important; font-size: 11pt; }
+  section, .hero { padding-block: 18pt !important; background: var(--print-paper) !important; }
   section::before, .hero::before { display: none !important; }
   .wrap { max-width: 100% !important; padding-inline: 0 !important; }
   h1 { font-size: 24pt; }
   .section-display-line { font-size: 17pt; }
   h2 { font-size: 15pt; }
-  a { color: #000000; text-decoration: underline; }
+  a { color: var(--print-ink); text-decoration: underline; }
   main a[href^="http"]::after,
   main a[href^="mailto"]::after {
     content: " (" attr(href) ")";
